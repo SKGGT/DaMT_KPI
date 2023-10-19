@@ -127,5 +127,4 @@ class Controller:
         if item_id < 0:
             return
 
-        self.model.delete_item(item_id, primary_key_name, table_name)
-        self.view.show_message("Item deleted successfully!")
+        self.view.show_message(self.model.delete_item(item_id, primary_key_name, table_name))

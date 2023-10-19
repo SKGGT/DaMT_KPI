@@ -1,4 +1,4 @@
-import psycopg2 as psycopg2
+import psycopg2
 import table_schemes
 
 
@@ -14,19 +14,6 @@ class table:
         self.primary_key_name: str = ""
         self.foreign_key_names: list[str] = []
         self.columns: list[column] = []
-
-    def get_data_type(self, column_name: str = "", column_index: int = -1):
-        assert (column_name != "") != (column_index != -1), "need to specify either column's name or index!"
-        if column_name:
-            try:
-                return self.columns[[column.name for column in self.columns].index(column_name)].data_type
-            except ValueError:
-                raise ValueError("The specified column name doesn't exist")
-        elif column_index:
-            try:
-                return self.columns[column_index].data_type
-            except IndexError:
-                raise IndexError("The specified column index doesn't exist")
 
 
 class Model:
@@ -131,7 +118,7 @@ class Model:
         return True if c.fetchall() != [] else False
 
     def add_item(self, table_name: str, atributes: tuple):
-        column_names = self.tables[table_name].foreign_key_names
+        column_names = [foreign_key_name for foreign_key_name in self.tables[table_name].foreign_key_names]
         for column_name in [column.name for column in self.tables[table_name].columns]:
             column_names.append(column_name)
 
@@ -145,7 +132,7 @@ class Model:
     def get_all_from_table(self, table_name: str):
         c = self.conn.cursor()
 
-        c.execute(f'SELECT * FROM "{table_name}"')
+        c.execute(f'SELECT * FROM "{table_name}" LIMIT 100')
 
         return c.fetchall()
 
@@ -163,5 +150,11 @@ class Model:
 
     def delete_item(self, item_id, primary_key_name, table_name):
         c = self.conn.cursor()
-        c.execute(f'DELETE FROM "{table_name}" WHERE "{primary_key_name}"={item_id}')
+        try:
+            c.execute(f'DELETE FROM "{table_name}" WHERE "{primary_key_name}"={item_id}')
+        except psycopg2.errors.ForeignKeyViolation:
+            self.conn.commit()
+            print(f"Foreign key constraint violated!")
+            return f"Unable to delete {table_name}:{primary_key_name}:{item_id}"
         self.conn.commit()
+        return "Item deleted successfully!"
