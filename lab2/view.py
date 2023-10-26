@@ -65,5 +65,9 @@ class View:
         return inputs
 
     @staticmethod
+    def get_simple_input(prompt: str) -> str:
+        return input(prompt)
+
+    @staticmethod
     def show_message(message):
         print(message)

@@ -2,18 +2,18 @@ import psycopg2
 import table_schemes
 
 
-class column:
+class Column:
     def __int__(self):
         self.name = ""
         self.data_type = ""
 
 
-class table:
+class Table:
     def __int__(self):
         self.name = ""
         self.primary_key_name: str = ""
         self.foreign_key_names: list[str] = []
-        self.columns: list[column] = []
+        self.columns: list[Column] = []
 
 
 class Model:
@@ -25,7 +25,7 @@ class Model:
             host='localhost',
             port=5432
         )
-        self.tables: dict[str, table] = {}
+        self.tables: dict[str, Table] = {}
         self.data_type_formats = {}
         self.create_tables()
         self.set_db_table_info()
@@ -36,7 +36,7 @@ class Model:
         for table_name, table_defenition in vars(table_schemes).items():
             if table_name.startswith('__') or table_name.endswith('__'):
                 continue
-            new_table = table()
+            new_table = Table()
             new_table.name = table_name
             new_table.columns = []
             self.tables[table_name] = new_table
@@ -88,7 +88,7 @@ class Model:
             for column_info in columns:
                 if column_info[0] == self.tables[table_name].primary_key_name or column_info[0] in self.tables[table_name].foreign_key_names:
                     continue
-                new_column = column()
+                new_column = Column()
                 new_column.name, new_column.data_type = tuple(column_info)
 
                 self.tables[table_name].columns.append(new_column)
@@ -154,7 +154,6 @@ class Model:
             c.execute(f'DELETE FROM "{table_name}" WHERE "{primary_key_name}"={item_id}')
         except psycopg2.errors.ForeignKeyViolation:
             self.conn.commit()
-            print(f"Foreign key constraint violated!")
-            return f"Unable to delete {table_name}:{primary_key_name}:{item_id}"
+            return f"Foreign key constraint violated! \nUnable to delete {table_name}:{primary_key_name}:{item_id}"
         self.conn.commit()
         return "Item deleted successfully!"

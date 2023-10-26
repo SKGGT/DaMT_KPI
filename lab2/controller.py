@@ -1,4 +1,3 @@
-import model
 from model import Model
 from view import View
 
@@ -27,7 +26,7 @@ class Controller:
         self.view.show_message("\nSelect table:")
         for index, table_name in enumerate(self.model.tables, start=1):
             self.view.show_message(f"{index}. {table_name}")
-        return list(self.model.tables.keys())[int(input("Enter your choice: ")) - 1]
+        return list(self.model.tables.keys())[int(self.view.get_simple_input("Enter your choice: ")) - 1]
 
     def get_primary_key(self, table_name) -> (str, int):
         primary_key_name = self.model.tables[table_name].primary_key_name
@@ -67,7 +66,7 @@ class Controller:
         self.view.show_message("3. Update Item")
         self.view.show_message("4. Delete Item")
         self.view.show_message("5. Quit")
-        return input("Enter your choice: ")
+        return self.view.get_simple_input("Enter your choice: ")
 
     def add_item(self):
         table_name = self.get_table()
